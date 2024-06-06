@@ -6,6 +6,7 @@ const RowDisplay = () => {
     const [rowIndex, setRowIndex] = useState(1);
     const [rowData, setRowData] = useState({});
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         fetchRowData(rowIndex);
@@ -14,11 +15,13 @@ const RowDisplay = () => {
     const fetchRowData = async (index) => {
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:5000/row/${index}`);
+            const response = await axios.get(`/api/row?index=${index}`);
             setRowData(response.data);
+            setError(null);  // Reset any previous error
             setLoading(false);
         } catch (error) {
             console.error('Error fetching row data:', error);
+            setError('Failed to fetch data.');
             setLoading(false);
         }
     };
@@ -42,6 +45,10 @@ const RowDisplay = () => {
         return <div>Loading...</div>;
     }
 
+    if (error) {
+        return <div>{error}</div>;
+    }
+
     return (
         <div>
             <div>
@@ -59,7 +66,17 @@ const RowDisplay = () => {
                 <p>Column B: {rowData.B}</p>
                 <p>Column D: {rowData.D}</p>
                 <p>Column E: {rowData.E}</p>
-                {rowData.G && <img src={rowData.G} alt="Row Image" className="row-image" />}
+                {rowData.G && (
+                    <img
+                        src={rowData.G}
+                        alt="Row"
+                        className="row-image"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'fallback-image-url.jpg'; // Fallback image
+                        }}
+                    />
+                )}
             </div>
         </div>
     );
